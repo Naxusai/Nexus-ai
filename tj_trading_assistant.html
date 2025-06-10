@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TJ Trading Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 20px;
+    }
+    h1 {
+      color: #38bdf8;
+    }
+    #chatbox {
+      width: 100%;
+      height: 400px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .message {
+      margin: 10px 0;
+    }
+    .user {
+      color: #22c55e;
+    }
+    .bot {
+      color: #f472b6;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    #userInput {
+      width: 60%;
+    }
+    #marketSelect {
+      font-size: 16px;
+      padding: 10px;
+    }
+    #imageInput {
+      margin-top: 10px;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 10px;
+      border: 1px solid #334155;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 TJ Trading Assistant</h1>
+  <select id="marketSelect">
+    <option value="forex">Forex</option>
+    <option value="crypto">Crypto</option>
+    <option value="indian">Indian Markets</option>
+  </select><br><br>
+
+  <div id="chatbox"></div>
+
+  <input id="userInput" type="text" placeholder="Ask about trading..." />
+  <button onclick="sendMessage()">Send</button>
+  <br><br>
+  <label style="color: #f8fafc">📸 Upload Chart (JPG/PNG):</label>
+  <input type="file" id="imageInput" accept="image/*" />
+  <div id="chartPreview"></div>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+
+    function sendMessage() {
+      const market = document.getElementById("marketSelect").value;
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage("You", `[${market.toUpperCase()}] ${message}`, "user");
+
+      const reply = getBotResponse(message.toLowerCase(), market);
+      addMessage("TJ", reply, "bot");
+
+      input.value = "";
+    }
+
+    function addMessage(sender, text, cls) {
+      const msg = document.createElement("div");
+      msg.className = "message " + cls;
+      msg.innerHTML = `<b>${sender}:</b> ${text}`;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function getBotResponse(msg, market) {
+      const common = {
+        "strategy": "Use RSI and support/resistance for optimal entry. Follow a 1:2 risk-reward ratio.",
+        "support": "Support is where the price tends to stop falling. Buy near strong support if confirmed by volume.",
+        "trend": "In a strong trend, follow price action and volume. Avoid trading against the main trend.",
+        "indicator": "RSI, MACD, and Moving Averages are key indicators. Use 200 EMA for trend confirmation."
+      };
+
+      const marketSpecific = {
+        forex: {
+          "today": "USD is currently bullish; avoid overleveraging on USD pairs. Look for NY session volatility.",
+          "gold": "Gold (XAU/USD) is neutral today. Watch for breakout above resistance before buying."
+        },
+        crypto: {
+          "today": "BTC and ETH show sideways movement. Avoid FOMO during consolidation phases.",
+          "btc": "Bitcoin is consolidating. A breakout above resistance may trigger a new rally."
+        },
+        indian: {
+          "today": "Nifty50 is range-bound. Wait for a breakout or breakdown for directional clarity.",
+          "banknifty": "BankNifty looks weak today. Watch for rejection near 15-min resistance zones."
+        }
+      };
+
+      for (const key in common) {
+        if (msg.includes(key)) return common[key];
+      }
+
+      for (const key in marketSpecific[market]) {
+        if (msg.includes(key)) return marketSpecific[market][key];
+      }
+
+      return "Please ask about indicators, support/resistance, or market outlook (e.g. 'gold today', 'Nifty', 'BTC').";
+    }
+
+    document.getElementById("userInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    // Image Upload + Fake Buy Zone Analysis
+    document.getElementById("imageInput").addEventListener("change", function () {
+      const file = this.files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const imgHTML = `<img src="${e.target.result}" alt="Chart Preview" />`;
+        const analysis = `<div class="message bot"><b>TJ:</b> Chart uploaded. Based on visual pattern, possible <b>Buy Zone</b> detected near recent support area. Look for bullish candle confirmation.</div>`;
+        document.getElementById("chartPreview").innerHTML = imgHTML + analysis;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      };
+      if (file) reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>
